@@ -2,6 +2,8 @@
 import cv2 as cv
 import mediapipe as mp
 import pyautogui as au
+gas_on=False
+brake_on=False
 #forgot everythign about cv 
 cap= cv.VideoCapture(0)
 
@@ -23,7 +25,14 @@ def brake():
 def stop_brake():
     global brake_on
     au.keyUp('left')
-    brake_on=False        
+    brake_on=False  
+def neutral():
+    global gas_on
+    global brake_on
+    if gas_on:
+        stop_gas()
+    if brake_on:
+        stop_brake()      
 #for the hands
 mp_hands=mp.solutions.hands
 mp_drawing=mp.solutions.drawing_utils
@@ -61,17 +70,32 @@ while True:
             #hand detection part for folding and not folding for now ignoring thumb
             index_tip=hand_landmarks.landmark[8]
             index_pip=hand_landmarks.landmark[6]
+            index_mcp=hand_landmarks.landmark[5]
+            index_dip=hand_landmarks.landmark[7]
             middle_tip=hand_landmarks.landmark[12]
             middle_pip=hand_landmarks.landmark[10]
-            if (index_tip.y>=index_pip.y and middle_tip.y>=middle_pip.y):
+            middle_mcp=hand_landmarks.landmark[9]
+            middle_dip=hand_landmarks.landmark[11]
+            ring_tip=hand_landmarks.landmark[16]
+            ring_pip=hand_landmarks.landmark[14]
+            thumb_tip=hand_landmarks.landmark[4]
+            thumb_ip=hand_landmarks.landmark[3]
+            if(index_tip.y<index_pip.y and middle_tip.y>middle_pip.y): #one finger up
                 gas()
                 stop_brake()
-            else:
+            
+            elif (index_tip.y<index_pip.y and middle_tip.y<middle_pip.y): # 2 up
                 brake()
                 stop_gas()
+            else:
+                neutral()
+            
+
     cv.imshow("Webcam",frame)
 cap.release()
 cv.destroyAllWindows() 
 #end the capture here
+
+#need to make a neutral gesture
 
 
